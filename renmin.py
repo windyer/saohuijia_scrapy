@@ -1,30 +1,27 @@
-#coding=utf8
+#coding=utf-8
 import requests
-import re
 from lxml import etree
+import re
 data={
-"basenames": "rmwsite",
-"where": "(CONTENT = (新西兰) or TITLE = (新西兰) or AUTHOR = (新西兰))",
-"curpage":1,
+
+"basenames":"rmwsite",
+"where":"(CONTENT=(新西兰) or TITLE=(新西兰) or AUTHOR=(新西兰)) and (CLASS2=国际)",
+"curpage":2,
 "pagecount":20,
 "classvalue":"ALL",
-"classfield":"CLASS2",
+"classfield":"CLASS3",
 "isclass":1,
 "keyword":"新西兰",
 "sortfield":"LIFO",
-"id":0.8194659682293626,
+"id":0.8854089527904285,
 "_":"",
 }
-head={
-    'Referer':"http://search.people.com.cn/cnpeople/news/error.jsp"
-
-}
-data2={"siteName":"news","pageNum":1,"keyword":"%D0%C2%CE%F7%C0%BC"}
-data1={"XMLLIST":"%253CRMW%253E%253CBASENAMES%253E%253C%21%255BCDATA%255Brmwsite%255D%255D%253E%253C%252FBASENAMES%253E%253CALLKEYWORD%253E%253C%21%255BCDATA%255B%255D%255D%253E%253C%252FALLKEYWORD%253E%253CALLINPUT%253E%253C%21%255BCDATA%255B%255D%255D%253E%253C%252FALLINPUT%253E%253CANYKEYWORD%253E%253C%21%255BCDATA%255B%255D%255D%253E%253C%252FANYKEYWORD%253E%253CNOALLKEYWORD%253E%253C%21%255BCDATA%255B%255D%255D%253E%253C%252FNOALLKEYWORD%253E%253CDATEFROM%253E%253C%21%255BCDATA%255B%255D%255D%253E%253C%252FDATEFROM%253E%253CDATETO%253E%253C%21%255BCDATA%255B%255D%255D%253E%253C%252FDATETO%253E%253CSORTFIELD%253E%253C%21%255BCDATA%255BLIFO%255D%255D%253E%253C%252FSORTFIELD%253E%253CCHANNEL%253E%253C%21%255BCDATA%255BALL%255D%255D%253E%253C%252FCHANNEL%253E%253CKEYWORD%253E%253C%21%255BCDATA%255B%2525E6%252596%2525B0%2525E8%2525A5%2525BF%2525E5%252585%2525B0%255D%255D%253E%253C%252FKEYWORD%253E%253CSEARCHFIELD%253E%253C%21%255BCDATA%255BContent%255D%255D%253E%253C%252FSEARCHFIELD%253E%253C%252FRMW%253E","names":"%D0%C2%CE%F7%C0%BC"}
-res = requests.post("http://search.people.com.cn/cnpeople/search.do",data=data2,timeout=60,headers=head)
-print res.content
-print res.url
-content=res.content
-tree=etree.HTML(content)
-node=tree.xpath("//body//center//table//tbody//tr//td.tt2//a[@href]")
-print node
+#rep=requests.post("http://search.people.com.cn/rmw/GB/rmwsearch/gj_searchht.jsp",data=data)
+#content= rep.content
+#print rep.cookies
+#print content
+#tree=etree.HTML(content)
+#link_list =re.findall(r"(?<=http:).+?(?=html)" ,"asdadasdadasdhttp:\\pasasd.htmlsss")
+#link_list = re.findall(r"(http://([\w-]+\.)+[\w-]+(/[\w_./?%&=]*)?.html )","afadgfadghttp:\\jhakdghfd.htmladgf")
+link_list =re.findall(r"http.+?html" ,"asdadasdadasdhttp:\\pasasd.htmlsssasdadasdadasdhttp:\\pasasd.htmlsss")
+print link_list
