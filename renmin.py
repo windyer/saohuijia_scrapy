@@ -2,6 +2,7 @@
 import requests
 from lxml import etree
 import re
+from newspaper import Article
 data={
 
 "basenames":"rmwsite",
@@ -16,12 +17,15 @@ data={
 "id":0.8854089527904285,
 "_":"",
 }
-#rep=requests.post("http://search.people.com.cn/rmw/GB/rmwsearch/gj_searchht.jsp",data=data)
-#content= rep.content
-#print rep.cookies
-#print content
-#tree=etree.HTML(content)
-#link_list =re.findall(r"(?<=http:).+?(?=html)" ,"asdadasdadasdhttp:\\pasasd.htmlsss")
-#link_list = re.findall(r"(http://([\w-]+\.)+[\w-]+(/[\w_./?%&=]*)?.html )","afadgfadghttp:\\jhakdghfd.htmladgf")
-link_list =re.findall(r"http.+?html" ,"asdadasdadasdhttp:\\pasasd.htmlsssasdadasdadasdhttp:\\pasasd.htmlsss")
+rep=requests.post("http://search.people.com.cn/rmw/GB/rmwsearch/gj_searchht.jsp",data=data)
+content= rep.content
+link_list =re.findall(r"http.+?html" ,content)
 print link_list
+detail = requests.get(link_list[1])
+tree=etree.HTML(detail.content)
+time = tree.xpath("//div[@class='fl']/text()")
+print "222222",time[0][:-5].encode("utf8")
+#article = Article("http://world.people.com.cn/n1/2016/1207/c1002-28930757.html", language='zh')
+#article.download()
+#article.parse()
+#print article.title,article.text,article.top_image
