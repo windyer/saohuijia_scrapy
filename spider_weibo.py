@@ -7,13 +7,15 @@ from pyspider.libs.base_handler import *
 from lxml import etree
 from newspaper import Article
 import re
+from mysql_conf import ToMysql
+import time
 
 class Handler(BaseHandler):
     crawl_config = {
     }
 
     def __init__(self):
-        self.page_count = 5
+        self.page_count = 10
         self.urls = "http://weibo.cn/purenewzealand?page={0}&vt=4"
 
         self.cookie = {
@@ -25,7 +27,7 @@ class Handler(BaseHandler):
     @every(minutes=60)
     def on_start(self):
         for page in range(self.page_count):
-            url = self.urls.format(str(page))
+            url = self.urls.format(str(page+1))
             self.crawl(url, callback=self.index_page, cookies=self.cookie)
 
     @config(age=60 * 60)
@@ -50,44 +52,65 @@ class Handler(BaseHandler):
             tree = etree.HTML(content)
             title = tree.xpath("//div[@class='title']/text()")
             text = tree.xpath("//div[@class='WB_editor_iframe']//p/text()")
-            time = tree.xpath("//span[@class='time']/text()")
-            image = tree.xpath("//img[@node-type='articleHeaderPic']/@src")
+            article_time = tree.xpath("//span[@class='time']/text()")
+            images = tree.xpath("//img[@node-type='articleHeaderPic']/@src")
             image2 = tree.xpath("//div[@class='WB_editor_iframe']//img/@src")
-            image.extend(image2)
-            return {
-                "title": title[0].encode("utf8"),
-                "text": "".join(text),
-                "time": time[0],
-                "image": image
+            images.extend(image2)
+            sql = ToMysql()
+            data = {
+                "title": "".join(title),
+                "text": "".join(text).replace("\n",""),
+                "article_time": "".join(article_time),
+                "spider_time": time.strftime('%Y-%m-%d %H:%M:%S'),
+                "image_1": images[0] if len(images) >= 1 else None,
+                "image_2": images[1] if len(images) >= 2 else None,
+                "image_3": images[2] if len(images) >= 3 else None,
+                "source": "weibo",
             }
+            sql.into(**data)
+            return data
+
 
     @config(priority=2)
     def detail_page_weixin(self, response):
+        sql = ToMysql()
         if "weixin" in response.url:
             content = response.content
             tree = etree.HTML(content)
             text = tree.xpath("//span/text()")
             title = tree.xpath("//h2[@class='rich_media_title']/text()")
-            time = tree.xpath("//em[@id='post-date']/text()")
-            image = tree.xpath("//img/@data-src")
-            return {
+            article_time = tree.xpath("//em[@id='post-date']/text()")
+            images = tree.xpath("//img/@data-src")
+            data = {
                 "title": "".join(title),
-                "text": "".join(text),
-                "time": time[0],
-                "image": image[1:-1]
+                "text": "".join(text).replace("\n",""),
+                "article_time": "".join(article_time),
+                "spider_time": time.strftime('%Y-%m-%d %H:%M:%S'),
+                "image_1": images[1] if len(images) >= 2 else None,
+                "image_2": images[2] if len(images) >= 3 else None,
+                "image_3": images[3] if len(images) >= 3 else None,
+                "source": "weibo",
             }
+            sql.into(**data)
+            return data
         else:
             content = response.content
             tree = etree.HTML(content)
             title = tree.xpath("//div[@class='title']/text()")
             text = tree.xpath("//div[@class='WB_editor_iframe']//p/text()")
-            time = tree.xpath("//span[@class='time']/text()")
-            image = tree.xpath("//img[@node-type='articleHeaderPic']/@src")
+            article_time = tree.xpath("//span[@class='time']/text()")
+            images = tree.xpath("//img[@node-type='articleHeaderPic']/@src")
             image2 = tree.xpath("//div[@class='WB_editor_iframe']//img/@src")
-            image.extend(image2)
-            return {
-                "title": title[0].encode("utf8"),
-                "text": "".join(text),
-                "time": time[0],
-                "image": image
+            images.extend(image2)
+            data = {
+                "title": "".join(title),
+                "text": "".join(text).replace("\n",""),
+                "article_time": "".join(article_time),
+                "spider_time": time.strftime('%Y-%m-%d %H:%M:%S'),
+                "image_1": images[0] if len(images) >= 1 else None,
+                "image_2": images[1] if len(images) >= 2 else None,
+                "image_3": images[2] if len(images) >= 3 else None,
+                "source": "weibo",
             }
+            sql.into(**data)
+            return data

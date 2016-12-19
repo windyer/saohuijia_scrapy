@@ -6,6 +6,8 @@
 from pyspider.libs.base_handler import *
 from newspaper import Article
 from lxml import etree
+from mysql_conf import ToMysql
+import time
 
 class Handler(BaseHandler):
     crawl_config = {
@@ -21,7 +23,7 @@ class Handler(BaseHandler):
             urls.append(url.format(str(i+1)))
         self.crawl(urls, callback=self.index_page)
 
-    @config(age=10 * 24 * 60 * 60)
+    @config(age=60 * 60)
     def index_page(self, response):
         for each in response.doc('a[href^="http"]').items():
             detail_url = each.attr.href
@@ -35,10 +37,19 @@ class Handler(BaseHandler):
         article.download()
         article.parse()
         tree = etree.HTML(response.content)
-        time = tree.xpath("//span[@class='date']/text()")
-        return {
+        article_time = tree.xpath("//span[@class='date']/text()")
+        images = tree.xpath("//div[@class='article-main']//img/@src")
+        sql = ToMysql()
+        data = {
             "title": article.title,
             "text": article.text,
-            "image":article.images[0:3],
-            "time":time[0]
+            "article_time": article_time[0],
+            "spider_time": time.strftime('%Y-%m-%d %H:%M:%S'),
+            "image_1": images[0] if len(images) >= 1 else None,
+            "image_2": images[1] if len(images) >= 2 else None,
+            "image_3": images[2] if len(images) >= 3 else None,
+            "source": "jiemian",
         }
+        sql.into(**data)
+        return data
+

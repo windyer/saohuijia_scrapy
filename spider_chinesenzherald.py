@@ -5,12 +5,14 @@
 
 from pyspider.libs.base_handler import *
 from lxml import etree
+from mysql_conf import ToMysql
+import time
 
 class Handler(BaseHandler):
     crawl_config = {
     }
     def __init__(self):
-        self.article_cout =10
+        self.article_cout =20
         self.urls={
             "http://www.chinesenzherald.co.nz/news/new-zealand/?start=":u"新西兰",
             "http://www.chinesenzherald.co.nz/news/international/?start=":u"国际",
@@ -28,7 +30,7 @@ class Handler(BaseHandler):
                      url_list.append(url+str(i))
         self.crawl(url_list, callback=self.index_page)
 
-    @config(age=24 * 60 * 60)
+    @config(age=60 * 60)
     def index_page(self, response):
         content = response.content
         tree = etree.HTML(content)
@@ -42,17 +44,24 @@ class Handler(BaseHandler):
     def detail_page(self, response):
         content = response.content
         tree = etree.HTML(content)
-        image = tree.xpath("//div[@class='social-links-article-container']//img/@src")
+        images = tree.xpath("//div[@class='social-links-article-container']//img/@src")
         t = 0
-        for i in image:
-            image[t] = "http://www.chinesenzherald.co.nz/" + i
+        for i in images:
+            images[t] = "http://www.chinesenzherald.co.nz/" + i
             t += 1
         text = tree.xpath("//div[@class='article-page__content']//p/text()")
         title = tree.xpath("//h1/text()")
-        time = tree.xpath("//span[@class='article-page__header__date']/text()")
-        return {
-            "title": title[0].encode("utf8"),
-            "text":"".join(text),
-            "time":time[0],
-            "image":image,
+        article_time = tree.xpath("//span[@class='article-page__header__date']/text()")
+        sql = ToMysql()
+        data = {
+            "title": "".join(title),
+            "text": "".join(text),
+            "article_time": "".join(article_time),
+            "spider_time": time.strftime('%Y-%m-%d %H:%M:%S'),
+            "image_1": images[0] if len(images) >= 1 else None,
+            "image_2": images[1] if len(images) >= 2 else None,
+            "image_3": images[2] if len(images) >= 3 else None,
+            "source": "chinesenzherald",
         }
+        sql.into(**data)
+        return data

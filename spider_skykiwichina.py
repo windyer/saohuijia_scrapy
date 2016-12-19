@@ -4,7 +4,8 @@
 # Project: skykiwichina
 from lxml import etree
 from pyspider.libs.base_handler import *
-
+from mysql_conf import ToMysql
+import time
 
 class Handler(BaseHandler):
     crawl_config = {
@@ -14,7 +15,7 @@ class Handler(BaseHandler):
     def on_start(self):
         self.crawl('http://news.skykiwichina.com', callback=self.index_page)
 
-    @config(age=10 * 24 * 60 * 60)
+    @config(age=60 * 60)
     def index_page(self, response):
         content=response.content
         tree=etree.HTML(content)
@@ -27,17 +28,27 @@ class Handler(BaseHandler):
     def detail_page(self, response):
         content = response.content
         tree = etree.HTML(content)
-        image = tree.xpath("//div[@class='artText']//img/@src")
+        images = tree.xpath("//div[@class='artText']//img/@src")
         index = 0
-        for i in image:
-            image[index] = "'http://news.skykiwichina.com'" + i
+        for i in images:
+            if 'http' not in i:
+                images[index] = "http://news.skykiwichina.com" + i
+            else:
+                images[index] = i
             index += 1
-        time = tree.xpath("//h5/text()")
+        article_time = tree.xpath("//h5/text()")
         title = tree.xpath("//h1/text()")
         text = tree.xpath("//div[@class='artText']//p/text()")
-        return {
-            "title": title[0].encode("utf8"),
-            "image":image,
-            "time":time[0][-23:-4].encode("utf8"),
-            "text":"".join(text),
+        sql = ToMysql()
+        data = {
+            "title": "".join(title),
+            "text": "".join(text),
+            "article_time": article_time[0][-23:-4].encode("utf8"),
+            "spider_time": time.strftime('%Y-%m-%d %H:%M:%S'),
+            "image_1": images[0] if len(images) >= 1 else None,
+            "image_2": images[1] if len(images) >= 2 else None,
+            "image_3": images[2] if len(images) >= 3 else None,
+            "source": "skykiwichina",
         }
+        sql.into(**data)
+        return data

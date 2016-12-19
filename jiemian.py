@@ -7,37 +7,40 @@ from lxml import etree
 #for i in range(50):
 #    urls.append(url.format(str(i+1)))
 #print urls
-url = "http://www.kannz.com/"
-cookie = {
-    "SUB":"_2A251UNq6DeRxGeRI7lsT8ybJyDmIHXVWuubyrDV6PUJbkdANLRPAkW1Fe9TmFJzJbLhmC2N0qb7Q8J4G-w..",
-    "_T_WM":"48682eca346fd5756be3d656e13d9cf7",
-    "gsid_CTandWM":"4uu276891Ue2EncKXE3ynb9MW8D",
-
-}
-response = requests.get(url)
-content=response.content
-tree=etree.HTML(content)
-urls = tree.xpath("//article[@class='excerpt']//header//h2//a/@href")
-#urls2 = tree.xpath("//div[@class='sidebar']//a/@href")
-#urls.extend(urls2)
-urls2=[]
-for i in urls:
-    print i
-    urls2.append(i)
-
-#article = Article(urls2[0],language='zh')
+#url = "http://www.kannz.com/page/2/"
+#cookie = {
+#    "SUB":"_2A251UNq6DeRxGeRI7lsT8ybJyDmIHXVWuubyrDV6PUJbkdANLRPAkW1Fe9TmFJzJbLhmC2N0qb7Q8J4G-w..",
+#    "_T_WM":"48682eca346fd5756be3d656e13d9cf7",
+#    "gsid_CTandWM":"4uu276891Ue2EncKXE3ynb9MW8D",
+#
+#}
+#response = requests.get(url)
+#content=response.content
+#tree=etree.HTML(content)
+#urls = tree.xpath("//article[@class='excerpt']//header//h2//a/@href")
+##urls2 = tree.xpath("//div[@class='sidebar']//a/@href")
+##urls.extend(urls2)
+#urls2=[]
+#for i in urls:
+#    print i
+#    urls2.append(i)
+#
+##article = Article(urls2[0],language='zh')
 #article.download()
 #article.parse()
 #print article.text
 #print article.top_image
 #print article.title
 #
-response = requests.get(urls2[0])
+
+response = requests.get("http://www.jiemian.com/article/1005827.html")
 tree = etree.HTML(response.content)
-txt = tree.xpath("//p/text()")
-title = tree.xpath("//h1[@class='article-title']//a/text()")
-image = tree.xpath("//article[@class='article-content']//img/@src")
-print "".join(title),image,"".join(txt)
+time = tree.xpath("//span[@id='p_publishtime']/text()")
+txt = tree.xpath("//div[@id='p_content']//p/text()")
+title = tree.xpath("//h1[@id='p_title']//text()")
+images = tree.xpath("//div[@class='article-main']//img/@src")
+
+print "".join(title),"1",images,"".join(txt),time
 ###t=0
 ###for i in images:
 ###    images[t] = "http://www.chinesenzherald.co.nz/"+i
@@ -68,4 +71,3 @@ print "".join(title),image,"".join(txt)
 ##for i in image:
 ##    print i
 ###print time[0]
-#print "".join(title),article.top_image,"".join(txt)

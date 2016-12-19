@@ -7,6 +7,8 @@ from pyspider.libs.base_handler import *
 import re
 from newspaper import Article
 from lxml import etree
+from mysql_conf import ToMysql
+import time
 
 class Handler(BaseHandler):
     crawl_config = {
@@ -34,23 +36,34 @@ class Handler(BaseHandler):
         url = "http://search.people.com.cn/rmw/GB/rmwsearch/gj_searchht.jsp"
         self.crawl(url, callback=self.index_page,method='POST', data=self.data)
 
-    @config(age=10 * 24 * 60 * 60)
+    @config(age=60 * 60)
     def index_page(self, response):
         link_list = re.findall(r"http.+?html",response.content)
         for url in link_list:
-            self.crawl(url, callback=self.detail_page)
+            self.crawl(url, callback=self.detail_page, validate_cert=False)
 
     @config(priority=2)
     def detail_page(self, response):
-        tree=etree.HTML(response.content)
-        time = tree.xpath("//div[@class='fl']/text()")
-        url = response.url
-        article=Article(url,language='zh')
-        article.download()
-        article.parse()
-        return {
-            "title": article.title,
-            "text": article.text,
-            "image":article.top_image,
-            "time":time[0][:-5].encode("utf8")
+        tree = etree.HTML(response.content)
+        article_time = tree.xpath("//span[@id='p_publishtime']/text()")
+        txt = tree.xpath("//div[@id='p_content']//p/text()")
+        title = tree.xpath("//h1[@id='p_title']//text()")
+        images = tree.xpath("//div[@id='p_content']//img/@src")
+        images2=[]
+        for image in images:
+            if "http" in image:
+                images2.append(image)
+        sql = ToMysql()
+        data = {
+            "title": "".join(title),
+            "text": "".join(txt),
+            "article_time": "".join(article_time),
+            "spider_time": time.strftime('%Y-%m-%d %H:%M:%S'),
+            "image_1": images[0] if len(images) >= 1 else None,
+            "image_2": images[1] if len(images) >= 2 else None,
+            "image_3": images[2] if len(images) >= 3 else None,
+            "source": "renmin",
         }
+        sql.into(**data)
+        return data
+

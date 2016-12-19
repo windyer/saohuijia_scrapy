@@ -2,7 +2,7 @@
 # -*- encoding: utf-8 -*-
 # Created on 2016-12-15 17:34:08
 # Project: toutiao
-
+import time
 from pyspider.libs.base_handler import *
 import json
 from newspaper import Article
@@ -12,14 +12,14 @@ class Handler(BaseHandler):
     crawl_config = {
     }
     def __init__(self):
-        self.cont = "50"
+        self.cont = "500"
 
     @every(minutes=24 * 60)
     def on_start(self):
         url = "http://www.toutiao.com/search_content/?offset=0&format=json&keyword=%E6%96%B0%E8%A5%BF%E5%85%B0&autoload=true&count={0}&_=1478682405913".format(self.cont)
         self.crawl(url, callback=self.index_page)
 
-    @config(age=10 * 24 * 60 * 60)
+    @config(age=60 * 60)
     def index_page(self, response):
         #for each in response.doc('a[href^="http"]').items():
         content = response.content
@@ -35,11 +35,11 @@ class Handler(BaseHandler):
         article.download()
         article.parse()
         tree = etree.HTML(response.content)
-        time = tree.xpath("//span[@class='time']/text()")
+        #time = tree.xpath("//span[@class='time']/text()")
         title = tree.xpath("//h1[@class='article-title']/text()")
         return {
             "text": article.text,
             "title":title[0].encode("utf-8") ,
-            "image":article.images[0:3],
-            "time":time[0],
+            "image":article.images[0:2],
+            "time":time.strftime('%Y-%m-%d %H:%M:%S'),
         }
