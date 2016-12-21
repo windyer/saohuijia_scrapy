@@ -45,6 +45,7 @@ class Handler(BaseHandler):
             "image_2": images2[1] if len(images2) >= 2 else None,
             "image_3": images2[2] if len(images2) >= 3 else None,
             "source": "chinaembassy",
+            "tab": 0,
         }
         sql.into(**data)
         return data

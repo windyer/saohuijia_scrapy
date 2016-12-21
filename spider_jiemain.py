@@ -49,6 +49,7 @@ class Handler(BaseHandler):
             "image_2": images[1] if len(images) >= 2 else None,
             "image_3": images[2] if len(images) >= 3 else None,
             "source": "jiemian",
+            "tab": 0,
         }
         sql.into(**data)
         return data

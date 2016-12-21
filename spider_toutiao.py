@@ -7,7 +7,8 @@ from pyspider.libs.base_handler import *
 import json
 from newspaper import Article
 from lxml import etree
-
+from mysql_conf import ToMysql
+import time
 class Handler(BaseHandler):
     crawl_config = {
     }
@@ -35,11 +36,21 @@ class Handler(BaseHandler):
         article.download()
         article.parse()
         tree = etree.HTML(response.content)
-        #time = tree.xpath("//span[@class='time']/text()")
+        article_time = tree.xpath("//span[@class='time']/text()")
         title = tree.xpath("//h1[@class='article-title']/text()")
-        return {
+        title2 = tree.xpath("//title/text()")
+        images = tree.xpath("//div[@id='article-main']//img/@src")
+        sql = ToMysql()
+        data = {
+            "title": "".join(title) if len("".join(title))>0 else "".join(title2),
             "text": article.text,
-            "title":title[0].encode("utf-8") ,
-            "image":article.images[0:2],
-            "time":time.strftime('%Y-%m-%d %H:%M:%S'),
+            "article_time": "".join(article_time),
+            "spider_time": time.strftime('%Y-%m-%d %H:%M:%S'),
+            "image_1": images[0] if len(images) >= 1 else None,
+            "image_2": images[1] if len(images) >= 2 else None,
+            "image_3": images[2] if len(images) >= 3 else None,
+            "source": "toutiao",
+            "tab":0,
         }
+        sql.into(**data)
+        return data

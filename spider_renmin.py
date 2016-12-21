@@ -40,15 +40,16 @@ class Handler(BaseHandler):
     def index_page(self, response):
         link_list = re.findall(r"http.+?html",response.content)
         for url in link_list:
-            self.crawl(url, callback=self.detail_page, validate_cert=False)
+            if "2012" not in url:
+                self.crawl(url, callback=self.detail_page, validate_cert=False)
 
     @config(priority=2)
     def detail_page(self, response):
         tree = etree.HTML(response.content)
-        article_time = tree.xpath("//span[@id='p_publishtime']/text()")
-        txt = tree.xpath("//div[@id='p_content']//p/text()")
-        title = tree.xpath("//h1[@id='p_title']//text()")
-        images = tree.xpath("//div[@id='p_content']//img/@src")
+        article_time = tree.xpath("//div[@class='fl']/text()")
+        txt = tree.xpath("//div[@class='box_con']//p/text()")
+        title = tree.xpath("//h1//text()")
+        images = tree.xpath("//div[@class='box_con']//img/@src")
         images2=[]
         for image in images:
             if "http" in image:
@@ -57,12 +58,13 @@ class Handler(BaseHandler):
         data = {
             "title": "".join(title),
             "text": "".join(txt),
-            "article_time": "".join(article_time),
+            "article_time": article_time[0][-23:-5].encode("utf8"),
             "spider_time": time.strftime('%Y-%m-%d %H:%M:%S'),
             "image_1": images[0] if len(images) >= 1 else None,
             "image_2": images[1] if len(images) >= 2 else None,
             "image_3": images[2] if len(images) >= 3 else None,
             "source": "renmin",
+            "tab": 0,
         }
         sql.into(**data)
         return data

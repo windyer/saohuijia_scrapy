@@ -9,7 +9,8 @@ CREATE TABLE spider (
     image_1 varchar(256) ,
     image_2 varchar(256) ,
     image_3 varchar(256) ,
-    source varchar(32)
+    source varchar(32),
+    tab int(4) default 0
 )
 ;
 COMMIT;
