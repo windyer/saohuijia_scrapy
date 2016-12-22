@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 # Created on 2016-12-17 11:50:37
-# Project: weobo
+# Project: weibo
 
 from pyspider.libs.base_handler import *
 from lxml import etree

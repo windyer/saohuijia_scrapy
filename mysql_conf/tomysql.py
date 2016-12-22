@@ -11,12 +11,12 @@ class ToMysql():
                     'db':'others',
                     'charset':'utf8'}
         '''
-        hosts    = 'localhost'
-        username = 'root'
-        password = 'holytreetech.com'
+        hosts    = '139.224.0.100'
+        username = 'nzbdt'
+        password = '123456'
         database = 'nzbdtdb'
         charsets = 'utf8'
-        self.tables = 'spider'
+        self.tables = 'tb_news'
         self.connection = False
         try:
             self.conn = MySQLdb.connect(host = hosts,user = username,passwd = password,db = database,charset = charsets)

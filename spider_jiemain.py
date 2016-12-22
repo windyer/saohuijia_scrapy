@@ -8,6 +8,8 @@ from newspaper import Article
 from lxml import etree
 from mysql_conf import ToMysql
 import time
+from bs4 import BeautifulSoup
+from mysql_conf import FormatContent
 
 class Handler(BaseHandler):
     crawl_config = {
@@ -39,17 +41,25 @@ class Handler(BaseHandler):
         tree = etree.HTML(response.content)
         article_time = tree.xpath("//span[@class='date']/text()")
         images = tree.xpath("//div[@class='article-main']//img/@src")
+        soup = BeautifulSoup(response.content)
+        text=soup.select('div[class="article-content"]')
+        images2=[]
+        content = str(text[0])
+        for image in images:
+            if image !='':
+                images2.append("http:"+image)
+                content=content.replace(image,("http:"+image))
         sql = ToMysql()
+        format_content = FormatContent()
         data = {
-            "title": article.title,
-            "text": article.text,
-            "article_time": article_time[0],
-            "spider_time": time.strftime('%Y-%m-%d %H:%M:%S'),
-            "image_1": images[0] if len(images) >= 1 else None,
-            "image_2": images[1] if len(images) >= 2 else None,
-            "image_3": images[2] if len(images) >= 3 else None,
-            "source": "jiemian",
-            "tab": 0,
+            "Title": article.title,
+            "Content": format_content.format_content(content),
+            "AddTime": article_time[0],
+            "Images": ",".join(images2),
+            "ImageNum":len(images),
+            "Language": 1,
+            "NewsSource": "界面",
+            "Link":response.url
         }
         sql.into(**data)
         return data
