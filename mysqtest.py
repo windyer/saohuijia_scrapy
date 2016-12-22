@@ -18,7 +18,7 @@ conn1 = MySQLdb.connect(
     charset="utf8"
 )
 cur = conn.cursor()
-aa =cur.execute("select * from tb_news")
+aa =cur.execute("desc tb_news")
 #bb = cur.execute("decs tb_news")
 print aa
 info = cur.fetchmany(aa)

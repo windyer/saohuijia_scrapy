@@ -61,6 +61,9 @@ class Handler(BaseHandler):
             "NewsSource": "界面",
             "Link":response.url
         }
-        sql.into(**data)
+        try:
+            sql.into(**data)
+        except:
+            raise
         return data
 

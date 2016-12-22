@@ -8,7 +8,8 @@ from newspaper import Article
 from lxml import etree
 from mysql_conf import ToMysql
 import time
-
+from bs4 import BeautifulSoup
+from mysql_conf import FormatContent
 class Handler(BaseHandler):
     crawl_config = {
     }
@@ -36,18 +37,28 @@ class Handler(BaseHandler):
         for image in article.images:
             if "jpg" in image:
                 images.append(image)
+        soup = BeautifulSoup(response.content)
+        text = soup.select('div[id="News_Body_Txt_A"]')
+        content = str(text[0])
+        soup2 = BeautifulSoup(content)
+        imgs =soup2.select('img')
+        for img,img2 in zip(imgs,images):
+            content=content.replace(img['src'],img2.encode("utf8"))
         sql = ToMysql()
+        format_content = FormatContent()
         data = {
-            "title": article.title,
-            "text": article.text,
-            "article_time": "".join(article_time),
-            "spider_time": time.strftime('%Y-%m-%d %H:%M:%S'),
-            "image_1": images[0] if len(images) >= 1 else None,
-            "image_2": images[1] if len(images) >= 2 else None,
-            "image_3": images[2] if len(images) >= 3 else None,
-            "source": "fmprc",
-            "tab": 0,
+            "Title": article.title,
+            "Content": format_content.format_content(content),
+            "AddTime": article_time[0],
+            "Images": ",".join(images),
+            "ImageNum": len(images),
+            "Language": 1,
+            "NewsSource": "驻奥克兰总领馆",
+            "Link": response.url
         }
-        sql.into(**data)
+        #try:
+            #sql.into(**data)
+        #except:
+            #raise
         return data
 
