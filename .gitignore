@@ -1,0 +1,14 @@
+log
+*.log
+*.pyc
+*.pyo
+pb
+.coverage
+cover/
+*.pyo
+.lock
+*.kch
+*.swp
+.idea/
+.idea/*
+spider/
