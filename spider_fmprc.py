@@ -22,7 +22,7 @@ class Handler(BaseHandler):
     def index_page(self, response):
         for each in response.doc('a[href^="http"]').items():
             detail_url=each.attr.href
-            if "html" in detail_url:
+            if "html" in detail_url and 'fmprc' in detail_url:
                 self.crawl(detail_url, callback=self.detail_page)
 
     @config(priority=2)

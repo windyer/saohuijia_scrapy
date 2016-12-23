@@ -28,9 +28,10 @@ class Handler(BaseHandler):
     @config(age=60 * 60)
     def index_page(self, response):
         for each in response.doc('a[href^="http"]').items():
-            detail_url = each.attr.href
-            if ("article" in detail_url) and ("html" in detail_url):
-                self.crawl(each.attr.href, callback=self.detail_page)
+            if 'jiemian' in each.attr.href:
+                detail_url = each.attr.href
+                if ("article" in detail_url) and ("html" in detail_url):
+                    self.crawl(each.attr.href, callback=self.detail_page)
 
     @config(priority=2)
     def detail_page(self, response):
@@ -46,7 +47,7 @@ class Handler(BaseHandler):
         images2=[]
         content = str(text[0])
         for image in images:
-            if image !='':
+            if image !='' and 'http'not in image:
                 images2.append("http:"+image)
                 content=content.replace(image,("http:"+image))
         sql = ToMysql()

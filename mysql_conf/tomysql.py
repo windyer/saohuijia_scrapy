@@ -11,7 +11,7 @@ class ToMysql():
                     'db':'others',
                     'charset':'utf8'}
         '''
-        hosts    = '139.224.0.100'
+        hosts    = '52.78.198.99'
         username = 'nzbdt'
         password = '123456'
         database = 'nzbdtdb'
@@ -19,7 +19,7 @@ class ToMysql():
         self.tables = 'tb_news'
         self.connection = False
         try:
-            self.conn = MySQLdb.connect(host = hosts,user = username,passwd = password,db = database,charset = charsets)
+            self.conn = MySQLdb.connect(host = hosts,port=3306,user = username,passwd = password,db = database,charset = charsets)
             self.cursor = self.conn.cursor()
             self.cursor.execute("set names "+charsets)
             self.connection = True

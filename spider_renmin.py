@@ -9,6 +9,8 @@ from newspaper import Article
 from lxml import etree
 from mysql_conf import ToMysql
 import time
+from bs4 import BeautifulSoup
+from mysql_conf import FormatContent
 
 class Handler(BaseHandler):
     crawl_config = {
@@ -40,32 +42,37 @@ class Handler(BaseHandler):
     def index_page(self, response):
         link_list = re.findall(r"http.+?html",response.content)
         for url in link_list:
-            if "2012" not in url:
+            if "2012" not in url and "people" in url:
                 self.crawl(url, callback=self.detail_page, validate_cert=False)
 
     @config(priority=2)
     def detail_page(self, response):
         tree = etree.HTML(response.content)
         article_time = tree.xpath("//div[@class='fl']/text()")
-        txt = tree.xpath("//div[@class='box_con']//p/text()")
         title = tree.xpath("//h1//text()")
         images = tree.xpath("//div[@class='box_con']//img/@src")
+        soup = BeautifulSoup(response.content)
+        text=soup.select('div[class="box_con"]')
         images2=[]
+        content = str(text[0])
         for image in images:
-            if "http" in image:
+            if image !='' and "http" not in image:
+                images2.append("http://world.people.com.cn"+image)
+                content=content.replace(image,("http://world.people.com.cn"+image))
+            else:
                 images2.append(image)
         sql = ToMysql()
+        format_content = FormatContent()
         data = {
-            "title": "".join(title),
-            "text": "".join(txt),
-            "article_time": article_time[0][-23:-5].encode("utf8"),
-            "spider_time": time.strftime('%Y-%m-%d %H:%M:%S'),
-            "image_1": images[0] if len(images) >= 1 else None,
-            "image_2": images[1] if len(images) >= 2 else None,
-            "image_3": images[2] if len(images) >= 3 else None,
-            "source": "renmin",
-            "tab": 0,
+            "Title": "".join(title),
+            "Content": format_content.format_content(content),
+            "AddTime": article_time[0],
+            "Images": ",".join(images2),
+            "ImageNum":len(images),
+            "Language": 1,
+            "NewsSource": "人民网",
+            "Link":response.url
         }
-        sql.into(**data)
+        #sql.into(**data)
         return data
 

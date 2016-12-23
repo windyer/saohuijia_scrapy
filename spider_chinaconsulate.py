@@ -21,7 +21,7 @@ class Handler(BaseHandler):
     @config(age=60 * 60)
     def index_page(self, response):
         for each in response.doc('a[href^="http"]').items():
-            if "htm" in each.attr.href:
+            if "htm" in each.attr.href and "chinaconsulate" in each.attr.href:
                 self.crawl(each.attr.href, callback=self.detail_page)
 
     @config(priority=2)
@@ -53,8 +53,8 @@ class Handler(BaseHandler):
             "NewsSource": "驻奥克兰总领馆",
             "Link": response.url
         }
-        #try:
-            #sql.into(**data)
-        #except:
-            #raise
+        try:
+            sql.into(**data)
+        except:
+            raise
         return data

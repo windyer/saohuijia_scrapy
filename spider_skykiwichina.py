@@ -6,6 +6,8 @@ from lxml import etree
 from pyspider.libs.base_handler import *
 from mysql_conf import ToMysql
 import time
+from bs4 import BeautifulSoup
+from mysql_conf import FormatContent
 
 class Handler(BaseHandler):
     crawl_config = {
@@ -21,7 +23,7 @@ class Handler(BaseHandler):
         tree=etree.HTML(content)
         urls = tree.xpath("//div[@id='m_left']//a/@href")
         for url in urls:
-            if "shtml" in url:
+            if "shtml" in url and "skykiwichina" in url:
                 self.crawl(url, callback=self.detail_page)
 
     @config(priority=2)
@@ -38,18 +40,21 @@ class Handler(BaseHandler):
             index += 1
         article_time = tree.xpath("//h5/text()")
         title = tree.xpath("//h1/text()")
-        text = tree.xpath("//div[@class='artText']//p/text()")
+        soup = BeautifulSoup(response.content)
+        text=soup.select('div[class="artText"]')
+        images2=[]
+        content = str(text[0])
         sql = ToMysql()
+        format_content = FormatContent()
         data = {
-            "title": "".join(title),
-            "text": "".join(text),
-            "article_time": article_time[0][-23:-4].encode("utf8"),
-            "spider_time": time.strftime('%Y-%m-%d %H:%M:%S'),
-            "image_1": images[0] if len(images) >= 1 else None,
-            "image_2": images[1] if len(images) >= 2 else None,
-            "image_3": images[2] if len(images) >= 3 else None,
-            "source": "skykiwichina",
-            "tab": 0,
+            "Title": "".join(title),
+            "Content": format_content.format_content(content),
+            "AddTime": article_time[0][-23:-4].encode("utf8"),
+            "Images": ",".join(images),
+            "ImageNum":len(images),
+            "Language": 1,
+            "NewsSource": "新西兰天维网站",
+            "Link":response.url
         }
-        sql.into(**data)
+        #sql.into(**data)
         return data

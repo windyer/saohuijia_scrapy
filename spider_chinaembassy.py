@@ -20,7 +20,7 @@ class Handler(BaseHandler):
     @config(age=60 * 60)
     def index_page(self, response):
         for each in response.doc('a[href^="http"]').items():
-            if "htm" in each.attr.href and "chinaembassy":
+            if "htm" in each.attr.href and "chinaembassy" in each.attr.href:
                 self.crawl(each.attr.href, callback=self.detail_page)
 
     @config(priority=2)
