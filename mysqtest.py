@@ -19,11 +19,11 @@ conn1 = MySQLdb.connect(
 )
 cur = conn.cursor()
 #aa =cur.execute("select AddTime from tb_news")
-bb = cur.execute("select * from tb_news order by AddTime desc")
+bb = cur.execute("select * from tb_news  where NewsSource = 'nzherald' ")
 
 print bb
 info = cur.fetchmany(bb)
-print info[-4][-4]
+print info[-4][-5]
 
 cur.close()
 conn.commit()
