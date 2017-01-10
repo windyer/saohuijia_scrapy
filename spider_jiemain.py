@@ -25,7 +25,7 @@ class Handler(BaseHandler):
             urls.append(url.format(str(i+1)))
         self.crawl(urls, callback=self.index_page)
 
-    @config(age=60 * 60)
+    @config(age=12*60 * 60)
     def index_page(self, response):
         for each in response.doc('a[href^="http"]').items():
             if 'jiemian' in each.attr.href:
@@ -55,7 +55,7 @@ class Handler(BaseHandler):
         data = {
             "Title": article.title,
             "Content": format_content.format_content(content),
-            "AddTime": article_time[0],
+            "AddTime": article_time[0].replace("/","-"),
             "Images": ",".join(images2),
             "ImageNum":len(images),
             "Language": 1,

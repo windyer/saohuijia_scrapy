@@ -18,11 +18,12 @@ conn1 = MySQLdb.connect(
     charset="utf8"
 )
 cur = conn.cursor()
-aa =cur.execute("select content from tb_news")
-#bb = cur.execute(" show columns from tb_news")
-print aa
-#info = cur.fetchmany(aa)
-#print info[-1][-1]
+#aa =cur.execute("select AddTime from tb_news")
+bb = cur.execute("select * from tb_news order by AddTime desc")
+
+print bb
+info = cur.fetchmany(bb)
+print info[-4][-4]
 
 cur.close()
 conn.commit()

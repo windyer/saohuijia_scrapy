@@ -32,13 +32,13 @@ class Handler(BaseHandler):
             "_": "",
         }
 
-    @every(minutes=24 * 60)
+    @every(minutes=24*60)
     def on_start(self):
         self.data['pagecount'] = self.page_count
         url = "http://search.people.com.cn/rmw/GB/rmwsearch/gj_searchht.jsp"
         self.crawl(url, callback=self.index_page,method='POST', data=self.data)
 
-    @config(age=60 * 60)
+    @config(age=12*60*60)
     def index_page(self, response):
         link_list = re.findall(r"http.+?html",response.content)
         for url in link_list:
@@ -66,13 +66,13 @@ class Handler(BaseHandler):
         data = {
             "Title": "".join(title),
             "Content": format_content.format_content(content),
-            "AddTime": article_time[0],
+            "AddTime": article_time[0][-23:-5].replace(u"年","-").replace(u"月","-").replace(u"日"," ").encode("utf8"),
             "Images": ",".join(images2),
             "ImageNum":len(images),
             "Language": 1,
             "NewsSource": "人民网",
             "Link":response.url
         }
-        #sql.into(**data)
+        sql.into(**data)
         return data
 

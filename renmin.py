@@ -1,30 +1,13 @@
-#coding=utf-8
 import requests
 from lxml import etree
 import re
-from newspaper import Article
-data={
-
-"basenames":"rmwsite",
-"where":"(CONTENT=(新西兰) or TITLE=(新西兰) or AUTHOR=(新西兰)) and (CLASS2=国际)",
-"curpage":2,
-"pagecount":20,
-"classvalue":"ALL",
-"classfield":"CLASS3",
-"isclass":1,
-"keyword":"新西兰",
-"sortfield":"LIFO",
-"id":0.8854089527904285,
-"_":"",
-}
-rep=requests.post("http://search.people.com.cn/rmw/GB/rmwsearch/gj_searchht.jsp",data=data)
+import json
+rep=requests.get("http://www.nzherald.co.nz/json/sitesearch/index.cfm?&KW1=china&layout=all&order=Date&pageno=1&timespan=all&init=china")
 content= rep.content
-link_list =re.findall(r"http.+?html" ,content)
-print link_list
-detail = requests.get(link_list[1])
-tree=etree.HTML(detail.content)
-time = tree.xpath("//div[@class='fl']/text()")
-print "222222",time[0][:-5].encode("utf8")
+
+js_data = json.loads(unicode( content , errors='ignore'))
+for url in js_data['DATA']['RESULTS']:
+    print "http://www.nzherald.co.nz"+url['linkurl']
 #article = Article("http://world.people.com.cn/n1/2016/1207/c1002-28930757.html", language='zh')
 #article.download()
 #article.parse()

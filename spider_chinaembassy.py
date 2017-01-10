@@ -17,7 +17,7 @@ class Handler(BaseHandler):
     def on_start(self):
         self.crawl('http://www.chinaembassy.org.nz/chn/', callback=self.index_page)
 
-    @config(age=60 * 60)
+    @config(age=12*60 * 60)
     def index_page(self, response):
         for each in response.doc('a[href^="http"]').items():
             if "htm" in each.attr.href and "chinaembassy" in each.attr.href:
@@ -48,15 +48,15 @@ class Handler(BaseHandler):
         data = {
             "Title": article.title,
             "Content": format_content.format_content(content),
-            "AddTime": article_time[0],
+            "AddTime": article_time[0].replace("/","-"),
             "Images": ",".join(images2),
             "ImageNum": len(images2),
             "Language": 1,
             "NewsSource": "驻新西兰大使馆",
             "Link": response.url
         }
-        #try:
-            #sql.into(**data)
-        #except:
-            #raise
+        try:
+            sql.into(**data)
+        except:
+            raise
         return data
