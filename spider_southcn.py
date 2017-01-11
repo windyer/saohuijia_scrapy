@@ -9,6 +9,7 @@ from mysql_conf import ToMysql
 import datetime
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
+from qiniu_update import update
 
 
 class Handler(BaseHandler):
@@ -36,14 +37,20 @@ class Handler(BaseHandler):
         soup = BeautifulSoup(content)
         text = soup.select('div[class="content"]')
         content = str(text[0])
+        images2 = []
+        for image in images:
+            if image != '':
+                new_image = update.load(image, "southcn")
+                images2.append(new_image)
+                content = content.replace(image, new_image)
         sql = ToMysql()
         format_content = FormatContent()
         data = {
             "Title": "".join(title),
             "Content":format_content.format_content(str(content)),
             "AddTime":"".join(article_time),
-            "Images": ",".join(images),
-            "ImageNum": len(images),
+            "Images": ",".join(images2),
+            "ImageNum": len(images2),
             "Language": 0,
             "NewsSource": "南方新闻",
             "Link": response.url

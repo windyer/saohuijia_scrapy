@@ -9,6 +9,7 @@ from mysql_conf import ToMysql
 import time
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
+from qiniu_update import update
 
 class Handler(BaseHandler):
     crawl_config = {
@@ -39,16 +40,19 @@ class Handler(BaseHandler):
         content = str(text[0])
         soup2 = BeautifulSoup(content)
         imgs =soup2.select('img')
+        images2=[]
         for img,img2 in zip(imgs,images):
-            content=content.replace(img['src'],img2.encode("utf8"))
+            new_image = update.load(img2.encode("utf8"), "chinaconsulate")
+            images2.append(new_image)
+            content=content.replace(img['src'],new_image)
         sql = ToMysql()
         format_content = FormatContent()
         data = {
             "Title": article.title,
             "Content": format_content.format_content(content),
             "AddTime": article_time[0].replace("/","-"),
-            "Images": ",".join(images),
-            "ImageNum": len(images),
+            "Images": ",".join(images2),
+            "ImageNum": len(images2),
             "Language": 1,
             "NewsSource": "驻奥克兰总领馆",
             "Link": response.url

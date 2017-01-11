@@ -8,6 +8,7 @@ from mysql_conf import ToMysql
 import time
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
+from qiniu_update import update
 
 class Handler(BaseHandler):
     crawl_config = {
@@ -30,28 +31,34 @@ class Handler(BaseHandler):
     def detail_page(self, response):
         content = response.content
         tree = etree.HTML(content)
-        images = tree.xpath("//div[@class='artText']//img/@src")
-        index = 0
-        for i in images:
-            if 'http' not in i:
-                images[index] = "http://news.skykiwichina.com" + i
-            else:
-                images[index] = i
-            index += 1
+
         article_time = tree.xpath("//h5/text()")
         title = tree.xpath("//h1/text()")
         soup = BeautifulSoup(response.content)
         text=soup.select('div[class="artText"]')
-        images2=[]
         content = str(text[0])
+        images = tree.xpath("//div[@class='artText']//img/@src")
+        index = 0
+        images2=[]
+        for i in images:
+            if 'http' not in i:
+                new_image = update.load("http://news.skykiwichina.com" + i, "skykiwichina")
+                images2.append(new_image)
+                content = content.replace(i, new_image)
+            else:
+                new_image = update.load(i, "skykiwichina")
+                images2.append(new_image)
+                content = content.replace(i, new_image)
+            index += 1
+
         sql = ToMysql()
         format_content = FormatContent()
         data = {
             "Title": "".join(title),
             "Content": format_content.format_content(content),
             "AddTime": article_time[0][-23:-4].encode("utf8"),
-            "Images": ",".join(images),
-            "ImageNum":len(images),
+            "Images": ",".join(images2),
+            "ImageNum":len(images2),
             "Language": 1,
             "NewsSource": "新西兰天维网站",
             "Link":response.url

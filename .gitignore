@@ -13,3 +13,5 @@ cover/
 .idea/*
 spider/
 spider/*
+*/*.jpg
+*/*.png

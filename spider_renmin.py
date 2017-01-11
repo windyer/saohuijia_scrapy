@@ -11,6 +11,7 @@ from mysql_conf import ToMysql
 import time
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
+from qiniu_update import update
 
 class Handler(BaseHandler):
     crawl_config = {
@@ -57,10 +58,13 @@ class Handler(BaseHandler):
         content = str(text[0])
         for image in images:
             if image !='' and "http" not in image:
-                images2.append("http://world.people.com.cn"+image)
-                content=content.replace(image,("http://world.people.com.cn"+image))
+                new_image = update.load("http://world.people.com.cn"+image, "people")
+                images2.append(new_image)
+                content=content.replace(image,new_image)
             else:
-                images2.append(image)
+                new_image = update.load(image, "people")
+                images2.append(new_image)
+                content = content.replace(image, new_image)
         sql = ToMysql()
         format_content = FormatContent()
         data = {

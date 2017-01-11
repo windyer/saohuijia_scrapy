@@ -11,6 +11,7 @@ import time
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
 import datetime
+from qiniu_update import update
 
 class Handler(BaseHandler):
     crawl_config = {
@@ -49,7 +50,10 @@ class Handler(BaseHandler):
         content = str(text[0])
         for image in images:
             if image != '' and 'http' not in image:
-                images2.append("http://ourauckland.aucklandcouncil.govt.nz" + image)
+                new_image = update.load("http://ourauckland.aucklandcouncil.govt.nz" + image, "aucklandcouncil")
+                content = content.replace(image, new_image)
+                images2.append(new_image)
+
         sql = ToMysql()
         if len(images2) >0:
             content = "<img src={0}>".format(images2[0])+content
@@ -65,9 +69,9 @@ class Handler(BaseHandler):
             "NewsSource": "奥克兰市政府",
             "Link": response.url
         }
-        #try:
-        #    sql.into(**data)
-        #except:
-        #    raise
+        try:
+            sql.into(**data)
+        except:
+            raise
         return data
 

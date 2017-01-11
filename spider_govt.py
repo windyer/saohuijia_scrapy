@@ -10,8 +10,8 @@ from mysql_conf import ToMysql
 import datetime
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
-
-
+import urllib
+from qiniu_update import update
 class Handler(BaseHandler):
     crawl_config = {
     }
@@ -46,8 +46,9 @@ class Handler(BaseHandler):
         images2=[]
         for image in images:
             if image !='' and 'http'not in image:
-                images2.append("https://enz.govt.nz/"+image)
-                content=content.replace(image,("https://enz.govt.nz/"+image))
+                new_image=update.load("https://enz.govt.nz/"+image, "govt")
+                images2.append(new_image)
+                content=content.replace(image,new_image)
         soup2 = BeautifulSoup(content)
         s=[s.extract() for s in soup2('span')]
         sql = ToMysql()

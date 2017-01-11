@@ -36,8 +36,9 @@ def load(image,localfile):
         os.mkdir(localfile)
     except:
         pass
-    name = image.split('/')[-1]
-    path = localfile+"/{0}".format(name)
-    urllib.urlretrieve(image,path )
+    name = int(time.time())
+    name_type = image.split('.')[-1]
+    path = localfile+"/{0}.{1}".format(name,name_type)
+    urllib.urlretrieve(image,path)
     update(path,path)
     return "http://newsimage.saohuijia.com/"+path

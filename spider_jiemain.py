@@ -10,6 +10,7 @@ from mysql_conf import ToMysql
 import time
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
+from qiniu_update import update
 
 class Handler(BaseHandler):
     crawl_config = {
@@ -48,8 +49,9 @@ class Handler(BaseHandler):
         content = str(text[0])
         for image in images:
             if image !='' and 'http'not in image:
-                images2.append("http:"+image)
-                content=content.replace(image,("http:"+image))
+                new_image = update.load("http:"+image, "jiemian")
+                images2.append(new_image)
+                content=content.replace(image,new_image)
         sql = ToMysql()
         format_content = FormatContent()
         data = {
@@ -62,9 +64,9 @@ class Handler(BaseHandler):
             "NewsSource": "界面",
             "Link":response.url
         }
-        try:
-            sql.into(**data)
-        except:
-            raise
+        #try:
+        #    sql.into(**data)
+        #except:
+        #    raise
         return data
 

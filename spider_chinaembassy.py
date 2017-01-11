@@ -9,6 +9,9 @@ from mysql_conf import ToMysql
 import time
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
+from qiniu_update import update
+
+
 class Handler(BaseHandler):
     crawl_config = {
     }
@@ -32,17 +35,20 @@ class Handler(BaseHandler):
         content = response.content
         tree = etree.HTML(content)
         article_time = tree.xpath("//div[@id='News_Body_Time']/text()")
-        images2=[]
+        images=[]
         for image in article.images:
             if "chinaembassy" in image:
-                images2.append(image)
+                images.append(image)
         soup = BeautifulSoup(response.content)
         text = soup.select('div[id="News_Body_Txt_A"]')
         content = str(text[0])
         soup2 = BeautifulSoup(content)
         imgs =soup2.select('img')
-        for img,img2 in zip(imgs,images2):
-            content=content.replace(img['src'],img2.encode("utf8"))
+        images2=[]
+        for img,img2 in zip(imgs,images):
+            new_image = update.load(img2.encode("utf8"), "chinaembassy")
+            images2.append(new_image)
+            content=content.replace(img['src'],new_image)
         sql = ToMysql()
         format_content = FormatContent()
         data = {
