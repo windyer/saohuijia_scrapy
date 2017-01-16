@@ -38,6 +38,8 @@ def load(image,localfile):
         pass
     name = int(time.time())
     name_type = image.split('.')[-1]
+    if len(name_type) >3 :
+	name_type = "jpg"
     path = localfile+"/{0}.{1}".format(name,name_type)
     urllib.urlretrieve(image,path)
     update(path,path)
