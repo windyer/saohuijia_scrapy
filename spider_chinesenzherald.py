@@ -9,7 +9,7 @@ from mysql_conf import ToMysql
 import time
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
-
+import timer
 class Handler(BaseHandler):
     crawl_config = {
     }
@@ -24,8 +24,10 @@ class Handler(BaseHandler):
             "http://www.chinesenzherald.co.nz/news/entertainment/?start=":u"娱乐",
             "http://www.chinesenzherald.co.nz/news/socialmedia/?start=":u"自媒体",
               }
-    @every(minutes=24 * 60)
+    @every(minutes=60)
     def on_start(self):
+        if not timer.timer():
+            return
         url_list=[]
         for url in self.urls:
             for i in range(self.article_cout)[::10]:

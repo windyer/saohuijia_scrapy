@@ -11,15 +11,17 @@ import time
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
 from qiniu_update import update
-
+import timer
 class Handler(BaseHandler):
     crawl_config = {
     }
     def __init__(self):
         self.page = 50
 
-    @every(minutes=24 * 60)
+    @every(minutes=60)
     def on_start(self):
+        if not timer.timer():
+            return
         urls=[]
         url="http://a.jiemian.com/index.php?m=search&a=index&msg=%E6%96%B0%E8%A5%BF%E5%85%B0&type=news&page={}"
         for i in range(self.page):

@@ -12,7 +12,7 @@ import datetime
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
 from qiniu_update import update
-
+import timer
 class Handler(BaseHandler):
     crawl_config = {
     }
@@ -35,8 +35,10 @@ class Handler(BaseHandler):
             'Dec': 'December'
             }
 
-    @every(minutes=24 * 60)
+    @every(minutes=60)
     def on_start(self):
+        if not timer.timer():
+            return
         urls=[]
         for i in range(self.page):
             urls.append(self.url.format(str(i+1)))

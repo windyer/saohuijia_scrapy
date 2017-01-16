@@ -9,18 +9,21 @@ from newspaper import Article
 from lxml import etree
 from mysql_conf import ToMysql
 import time
+import timer
 class Handler(BaseHandler):
     crawl_config = {
     }
     def __init__(self):
         self.cont = "500"
 
-    @every(minutes=24 * 60)
+    @every(minutes=60)
     def on_start(self):
+        if not timer.timer():
+            return
         url = "http://www.toutiao.com/search_content/?offset=0&format=json&keyword=%E6%96%B0%E8%A5%BF%E5%85%B0&autoload=true&count={0}&_=1478682405913".format(self.cont)
         self.crawl(url, callback=self.index_page)
 
-    @config(age=60 * 60)
+    @config(age=24*10*60 * 60)
     def index_page(self, response):
         #for each in response.doc('a[href^="http"]').items():
         content = response.content

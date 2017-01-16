@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
 import datetime
 from qiniu_update import update
-
+import timer
 class Handler(BaseHandler):
     crawl_config = {
     }
@@ -20,15 +20,17 @@ class Handler(BaseHandler):
         self.page = 4
         self.url = 'http://ourauckland.aucklandcouncil.govt.nz/search?k=china&s=0&p={0}'
         self.url2 = 'http://ourauckland.aucklandcouncil.govt.nz/search?k=chinese&s=0&p={0}'
-    @every(minutes=24 * 60)
+    @every(minutes=60)
     def on_start(self):
+        if not timer.timer():
+            return
         urls=[]
         for i in range(self.page):
             urls.append(self.url.format(str(i)))
             urls.append(self.url2.format(str(i)))
         self.crawl(urls, callback=self.index_page)
 
-    @config(age=60 * 60)
+    @config(age=10*12*60 * 60)
     def index_page(self, response):
         for each in response.doc('a[href^="http"]').items():
             if 'article' in each.attr.href:

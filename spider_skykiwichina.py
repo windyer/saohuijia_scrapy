@@ -9,16 +9,18 @@ import time
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
 from qiniu_update import update
-
+import timer
 class Handler(BaseHandler):
     crawl_config = {
     }
 
-    @every(minutes=24 * 60)
+    @every(minutes=60)
     def on_start(self):
+        if not timer.timer():
+            return
         self.crawl('http://news.skykiwichina.com', callback=self.index_page)
 
-    @config(age=60 * 60)
+    @config(age=12*10*60 * 60)
     def index_page(self, response):
         content=response.content
         tree=etree.HTML(content)

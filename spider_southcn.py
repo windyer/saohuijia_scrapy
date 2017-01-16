@@ -10,14 +10,16 @@ import datetime
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
 from qiniu_update import update
-
+import timer
 
 class Handler(BaseHandler):
     crawl_config = {
     }
 
-    @every(minutes=24 * 60)
+    @every(minutes=60)
     def on_start(self):
+        if not timer.timer():
+            return
         count = 20
         self.crawl('http://search.southcn.com/web/search?channelid=216505&searchword=%E6%96%B0%E8%A5%BF%E5%85%B0&perpage={0}'.format(str(count)), callback=self.index_page)
 

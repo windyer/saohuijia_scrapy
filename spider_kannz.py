@@ -8,20 +8,22 @@ from mysql_conf import ToMysql
 import time
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
-
+import timer
 class Handler(BaseHandler):
     crawl_config = {
     }
     def __init__(self):
         self.page_cout = 10
         self.url = "http://www.kannz.com/page/{0}/"
-    @every(minutes=24 * 60)
+    @every(minutes= 60)
     def on_start(self):
+        if not timer.timer():
+            return
         for page in range(self.page_cout):
             url = self.url.format(str(page+1))
             self.crawl(url, callback=self.index_page)
 
-    @config(age=12*60 * 60)
+    @config(age=10*12*60 * 60)
     def index_page(self, response):
         content = response.content
         tree = etree.HTML(content)

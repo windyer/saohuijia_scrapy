@@ -10,14 +10,16 @@ from mysql_conf import ToMysql
 import datetime
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
-
+import timer
 
 class Handler(BaseHandler):
     crawl_config = {
     }
 
-    @every(minutes=24 * 60)
+    @every(minutes=60)
     def on_start(self):
+        if not timer.timer():
+            return
         self.crawl('http://search.sina.com.cn/?country=usstock&q=%E6%96%B0%E8%A5%BF%E5%85%B0&name=%E6%96%B0%E8%A5%BF%E5%85%B0&t=&c=news&k=%E6%96%B0%E8%A5%BF%E5%85%B0&range=all&col=1_7&from=channel&ie=utf-8', callback=self.index_page)
 
     @config(age=10 * 24 * 60 * 60)

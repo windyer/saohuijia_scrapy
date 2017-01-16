@@ -11,7 +11,7 @@ from mysql_conf import ToMysql
 import time
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
-
+import timer
 class Handler(BaseHandler):
     crawl_config = {
     }
@@ -28,11 +28,13 @@ class Handler(BaseHandler):
 
     @every(minutes=60)
     def on_start(self):
+        if not timer.timer():
+            return
         for page in range(self.page_count):
             url = self.urls.format(str(page+1))
             self.crawl(url, callback=self.index_page, cookies=self.cookie)
 
-    @config(age=60 * 60)
+    @config(age=24*10*60 * 60)
     def index_page(self, response):
         content = response.content
         tree = etree.HTML(content)

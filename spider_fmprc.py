@@ -11,16 +11,18 @@ import time
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
 from qiniu_update import update
-
+import timer
 class Handler(BaseHandler):
     crawl_config = {
     }
 
-    @every(minutes=24 * 60)
+    @every(minutes=60)
     def on_start(self):
+        if not timer.timer():
+            return
         self.crawl('http://www.fmprc.gov.cn/wjb/web_search.jsp?presearchword=&channelid=75003&siteid=5243&prepage=500&page=1&searchword=%E6%96%B0%E8%A5%BF%E5%85%B0+and+siteid%3D5243&sw=%E6%96%B0%E8%A5%BF%E5%85%B0&select=1', callback=self.index_page)
 
-    @config(age=60 * 60)
+    @config(age=12*10*60 * 60)
     def index_page(self, response):
         for each in response.doc('a[href^="http"]').items():
             detail_url=each.attr.href
