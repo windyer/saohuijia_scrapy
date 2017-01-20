@@ -13,7 +13,7 @@ class ToMysql():
         '''
         hosts    = '52.78.198.99'
         username = 'nzbdt'
-        password = '123456'
+        password = 'saohuijia@123456'
         database = 'nzbdtdb'
         charsets = 'utf8'
         self.tables = 'tb_news'
