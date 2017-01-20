@@ -8,17 +8,19 @@ from mysql_conf import ToMysql
 import time
 from bs4 import BeautifulSoup
 from mysql_conf import FormatContent
+from qiniu_update import update
 import timer
+
 class Handler(BaseHandler):
     crawl_config = {
     }
     def __init__(self):
         self.page_cout = 10
         self.url = "http://www.kannz.com/page/{0}/"
-    @every(minutes= 60)
+    @every(minutes=60)
     def on_start(self):
-        if not timer.timer():
-            return
+        #if not timer.timer():
+        #    return
         for page in range(self.page_cout):
             url = self.url.format(str(page+1))
             self.crawl(url, callback=self.index_page)
@@ -45,10 +47,14 @@ class Handler(BaseHandler):
         text=soup.select('article[class="article-content"]')
         images2=[]
         content = str(text[0])
-        #for image in images:
-        #    if image !='':
-        #        images2.append("http:"+image)
-        #        content=content.replace(image,("http:"+image))
+        soup2 = BeautifulSoup(content)
+        s=[s.extract() for s in soup2('span')]
+        image_tap =soup2.select('img')
+        content2 = str(soup2)
+        for image,tap in zip(images,image_tap):
+            if image != '':
+                content2 = content2.replace(str(tap),"(url,"+str(image)+")")
+        text = ''.join(BeautifulSoup(content2).findAll(text=True))
         sql = ToMysql()
         format_content = FormatContent()
         data = {
@@ -59,11 +65,13 @@ class Handler(BaseHandler):
             "ImageNum":len(images),
             "Language": 1,
             "NewsSource": "看新西兰",
-            "Link":response.url
+            "Link":response.url,
+            "PlainText":text,
+
         }
-        try:
-            sql.into(**data)
-        except:
-            raise
+        #try:
+        #    sql.into(**data)
+        #except:
+        #    raise
         return data
 

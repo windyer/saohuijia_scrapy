@@ -26,15 +26,15 @@ class Handler(BaseHandler):
               }
     @every(minutes=60)
     def on_start(self):
-        if not timer.timer():
-            return
+        #if not timer.timer():
+        #    return
         url_list=[]
         for url in self.urls:
             for i in range(self.article_cout)[::10]:
                      url_list.append(url+str(i))
         self.crawl(url_list, callback=self.index_page)
 
-    @config(age=60 * 60)
+    @config(age=12*60 * 60)
     def index_page(self, response):
         content = response.content
         tree = etree.HTML(content)
@@ -60,9 +60,13 @@ class Handler(BaseHandler):
         text = soup.select('div[class="article-page__content"]')
         content = str(text[0])
         soup2 = BeautifulSoup(content)
+        s=[s.extract() for s in soup2('script')]
         imgs =soup2.select('img')
+        content2 = str(soup2)
         for img,img2 in zip(imgs,images):
             content=content.replace(img['src'],img2.encode("utf8"))
+            content2 = content2.replace(str(img),"(url,"+img2.encode("utf8")+")")
+        text = ''.join(BeautifulSoup(content2).findAll(text=True))
         sql = ToMysql()
         format_content = FormatContent()
         data = {
@@ -73,7 +77,9 @@ class Handler(BaseHandler):
             "ImageNum": len(images),
             "Language": 1,
             "NewsSource": "新西兰先驱报",
-            "Link": response.url
+            "Link": response.url,
+            "PlainText":text,
+
         }
         #sql.into(**data)
         return data

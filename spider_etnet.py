@@ -19,11 +19,11 @@ class Handler(BaseHandler):
 
     @every(minutes=60)
     def on_start(self):
-        if not timer.timer():
-            return
+        #if not timer.timer():
+        #    return
         self.crawl('http://news.baidu.com/ns?cl=2&rn=20&tn=news&word=site%3Anews.etnet.com.cn', callback=self.index_page)
 
-    @config(age=10 * 24 * 60 * 60)
+    @config(age=6 * 60 * 60)
     def index_page(self, response):
         for each in response.doc('a[href^="http"]').items():
             if "htm" in each.attr.href and "etnet" in each.attr.href:
@@ -39,23 +39,30 @@ class Handler(BaseHandler):
         soup = BeautifulSoup(content)
         text = soup.select('div[class="Newstextall"]')
         content = str(text[0])
+        soup2 = BeautifulSoup(content)
+        image_tap =soup2.select('img')
+        content2 = str(soup2)
         images2 = []
-        for image in images:
+        for image,tap in zip(images,image_tap):
             if image != '':
                 new_image = update.load(image, "etnet")
                 images2.append(new_image)
-                content = content.replace(image, new_image)
+                content = content.replace(image,new_image)
+                content2 = content2.replace(str(tap),"(url,"+str(new_image)+")")
+        text = ''.join(BeautifulSoup(content2).findAll(text=True))
         sql = ToMysql()
         format_content = FormatContent()
         data = {
             "Title": "".join(title),
             "Content":format_content.format_content(str(content)),
-            "AddTime":"".join(article_time),
+            "AddTime":"".join(article_time)[-19:],
             "Images": ",".join(images2),
             "ImageNum": len(images2),
             "Language": 0,
             "NewsSource": "经济通",
-            "Link": response.url
+            "Link": response.url,
+            "PlainText":text,
+
         }
         #try:
         #    sql.into(**data)

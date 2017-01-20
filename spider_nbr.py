@@ -16,11 +16,11 @@ class Handler(BaseHandler):
     crawl_config = {
     }
 
-    @every(minutes= 60)
+    @every(minutes=60)
     def on_start(self):
-        if not timer.timer():
-            return
-        page =3
+        #if not timer.timer():
+        #    return
+        page =2
         for i in range(page):
             self.crawl('https://www.nbr.co.nz/search/site/china?page={0}'.format(str(i+1)), callback=self.index_page)
             self.crawl('https://www.nbr.co.nz/search/site/chinese?page={0}'.format(str(i+1)), callback=self.index_page)
@@ -42,11 +42,17 @@ class Handler(BaseHandler):
         text = soup.select('div[class="field-items"]')
         content = str(text[1])
         images2=[]
-        for image in images:
+        soup2 = BeautifulSoup(content)
+        #s=[s.extract() for s in soup2('span')]
+        image_tap =soup2.select('img')
+        content2 = str(soup2)
+        for image,tap in zip(images,image_tap):
             if image != '':
                 new_image = update.load(image, "nbr")
                 images2.append(new_image)
                 content = content.replace(image,new_image)
+                content2 = content2.replace(str(tap),"(url,"+str(new_image)+")")
+        text = ''.join(BeautifulSoup(content2).findAll(text=True))
         sql = ToMysql()
         format_content = FormatContent()
         data = {
@@ -57,7 +63,9 @@ class Handler(BaseHandler):
             "ImageNum": len(images2),
             "Language": 0,
             "NewsSource": "nbr",
-            "Link": response.url
+            "Link": response.url,
+            "PlainText":text,
+
         }
         #try:
         #    sql.into(**data)

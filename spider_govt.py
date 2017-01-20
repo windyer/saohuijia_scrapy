@@ -23,13 +23,13 @@ class Handler(BaseHandler):
 
     @every(minutes=60)
     def on_start(self):
-        if not timer.timer():
-            return
+        #if not timer.timer():
+        #    return
         for i in range(self.page):
             self.crawl(self.china.format(str(i*10)), callback=self.index_page,validate_cert=False)
             self.crawl(self.chinese.format(str(i*10)), callback=self.index_page,validate_cert=False)
 
-    @config(age=10 * 24 * 60 * 60)
+    @config(age=24 * 60 * 60)
     def index_page(self, response):
         for each in response.doc('a[href^="http"]').items():
             if "ed-news" in each.attr.href:
@@ -46,25 +46,32 @@ class Handler(BaseHandler):
         content = str(text[0])
         tree = etree.HTML(content)
         images = tree.xpath("//img/@src")
-        images2=[]
-        for image in images:
-            if image !='' and 'http'not in image:
-                new_image=update.load("https://enz.govt.nz/"+image, "govt")
-                images2.append(new_image)
-                content=content.replace(image,new_image)
         soup2 = BeautifulSoup(content)
         s=[s.extract() for s in soup2('span')]
+        image_tap =soup2.select('img')
+        content2 = str(soup2)
+        content = str(soup2)
+        images2=[]
+        for image,tap in zip(images,image_tap):
+            if image != '' and 'http' not in image:
+                new_image = update.load("https://enz.govt.nz/"+image, "govt")
+                images2.append(new_image)
+                content = content.replace(image,new_image)
+                content2 = content2.replace(str(tap),"(url,"+str(new_image)+")")
+        text = ''.join(BeautifulSoup(content2).findAll(text=True))
         sql = ToMysql()
         format_content = FormatContent()
         data = {
             "Title": "".join(title),
-            "Content":format_content.format_content(str(soup2)),
+            "Content":format_content.format_content(content),
             "AddTime":str(datetime.datetime.strptime(article_time[0],'%d %B %Y'))[:10],
             "Images": ",".join(images2),
             "ImageNum": len(images),
             "Language": 0,
             "NewsSource": "govt",
-            "Link": response.url
+            "Link": response.url,
+            "PlainText":text,
+
         }
         #try:
         #    sql.into(**data)

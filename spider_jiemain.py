@@ -20,15 +20,15 @@ class Handler(BaseHandler):
 
     @every(minutes=60)
     def on_start(self):
-        if not timer.timer():
-            return
+        #if not timer.timer():
+        #    return
         urls=[]
         url="http://a.jiemian.com/index.php?m=search&a=index&msg=%E6%96%B0%E8%A5%BF%E5%85%B0&type=news&page={}"
         for i in range(self.page):
             urls.append(url.format(str(i+1)))
         self.crawl(urls, callback=self.index_page)
 
-    @config(age=12*60 * 60)
+    @config(age=10*12*60 * 60)
     def index_page(self, response):
         for each in response.doc('a[href^="http"]').items():
             if 'jiemian' in each.attr.href:
@@ -49,11 +49,18 @@ class Handler(BaseHandler):
         text=soup.select('div[class="article-content"]')
         images2=[]
         content = str(text[0])
-        for image in images:
+        soup2 = BeautifulSoup(content)
+        s=[s.extract() for s in soup2('script')]
+        image_tap =soup2.select('img')
+        content2 = str(soup2)
+        for image,tap in zip(images,image_tap):
             if image !='' and 'http'not in image:
-                new_image = update.load("http:"+image, "jiemian")
+                new_image = update.load('http:'+image, "jiemian")
                 images2.append(new_image)
-                content=content.replace(image,new_image)
+                content = content.replace(image,new_image)
+                content2 = content2.replace(str(tap),"(url,"+str(new_image)+")")
+        text = ''.join(BeautifulSoup(content2).findAll(text=True))
+        text = ''.join(BeautifulSoup(text).findAll(text=True))
         sql = ToMysql()
         format_content = FormatContent()
         data = {
@@ -64,11 +71,12 @@ class Handler(BaseHandler):
             "ImageNum":len(images),
             "Language": 1,
             "NewsSource": "界面",
-            "Link":response.url
+            "Link":response.url,
+            "PlainText":text,
+
         }
         #try:
         #    sql.into(**data)
         #except:
         #    raise
         return data
-

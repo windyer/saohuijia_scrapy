@@ -4,7 +4,7 @@ conn = MySQLdb.connect(
     host='52.78.198.99',
     port=3306,
     user='nzbdt',
-    passwd='123456',
+    passwd='saohuijia@123456',
     db='nzbdtdb',
     charset="utf8"
 )
@@ -19,11 +19,11 @@ conn1 = MySQLdb.connect(
 )
 cur = conn.cursor()
 #aa =cur.execute("select AddTime from tb_news")
-bb = cur.execute("select * from tb_news  where NewsSource = 'nzherald' ")
-
+bb = cur.execute("select * from tb_news WHERE AddTime >= '2017-01-19'")
+#cc = cur.execute("delete from tb_news where AddTime >= '2017-01-20'")
 print bb
 info = cur.fetchmany(bb)
-print info[-4][-5]
+#print info[2][-8]
 
 cur.close()
 conn.commit()

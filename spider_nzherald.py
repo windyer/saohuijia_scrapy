@@ -37,8 +37,8 @@ class Handler(BaseHandler):
 
     @every(minutes=60)
     def on_start(self):
-        if not timer.timer():
-            return
+        #if not timer.timer():
+        #    return
         urls=[]
         for i in range(self.page):
             urls.append(self.url.format(str(i+1)))
@@ -62,15 +62,19 @@ class Handler(BaseHandler):
         text = soup.select('div[class="articleBody"]')
         content = str(text[0])
         images = tree.xpath("//div[@class='articleBody']//img/@src")
-        images2=[]
-        for image in images:
-            if image !='':
-                new_image=update.load(image, "nzherald")
-                images2.append(new_image)
-                content=content.replace(image,new_image)
         soup2 = BeautifulSoup(content)
         s=[s.extract() for s in soup2('section')]
-        tree = etree.HTML(str(soup2))
+        s=[s.extract() for s in soup2('script')]
+        image_tap =soup2.select('img')
+        content2 = str(soup2)
+        images2=[]
+        for image,tap in zip(images,image_tap):
+            if image != '':
+                new_image = update.load(image, "nzherald")
+                images2.append(new_image)
+                content = content.replace(image,new_image)
+                content2 = content2.replace(str(tap),"(url,"+str(new_image)+")")
+        text = ''.join(BeautifulSoup(content2).findAll(text=True))
         #imgs = soup2.select('img')
         #for img, img2 in zip(imgs, images2):
         #    content = content.replace(img['src'], img2.encode("utf8"))
@@ -88,10 +92,12 @@ class Handler(BaseHandler):
             "ImageNum": len(images2),
             "Language": 0,
             "NewsSource": "nzherald",
-            "Link": response.url
+            "Link": response.url,
+            "PlainText":text,
+
         }
         #try:
         #    sql.into(**data)
         #except:
-        #    raise
+         #   raise
         return data

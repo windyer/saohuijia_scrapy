@@ -19,11 +19,11 @@ class Handler(BaseHandler):
 
     @every(minutes=60)
     def on_start(self):
-        if not timer.timer():
-            return
+        #if not timer.timer():
+        #    return
         self.crawl('http://sou.chinaqw.com/search.jsp?q=%E6%96%B0%E8%A5%BF%E5%85%B0', callback=self.index_page)
 
-    @config(age=10 * 24 * 60 * 60)
+    @config(age=6 * 60 * 60)
     def index_page(self, response):
         for each in response.doc('a[href^="http"]').items():
             if "shtml" in each.attr.href:
@@ -40,13 +40,19 @@ class Handler(BaseHandler):
         text = soup.select('div[class="left_zw"]')
         content = str(text[0])
         images2 = []
-        for image in images:
+        soup2 = BeautifulSoup(content)
+        image_tap = soup2.select('img')
+        images2=[]
+        content2 = content
+        for image,tap in zip(images,image_tap):
             if image != '':
-                new_image = update.load(image, "chinaqw")
+                new_image = update.load('http://www.chinaqw.com/'+image, "chinaqw")
                 images2.append(new_image)
-                content = content.replace(image, new_image)
+                content = content.replace(image,new_image)
+                content2 = content2.replace(str(tap),"(url,"+str(new_image)+")")
         sql = ToMysql()
         format_content = FormatContent()
+        text = ''.join(BeautifulSoup(content2).findAll(text=True))
         data = {
             "Title": "".join(title).replace("\n","").replace("\r",""),
             "Content":format_content.format_content(str(content)),
@@ -55,7 +61,8 @@ class Handler(BaseHandler):
             "ImageNum": len(images2),
             "Language": 0,
             "NewsSource": "中国侨网",
-            "Link": response.url
+            "Link": response.url,
+            "PlainText":text,
         }
         #try:
         #    sql.into(**data)

@@ -18,11 +18,11 @@ class Handler(BaseHandler):
 
     @every(minutes=60)
     def on_start(self):
-        if not timer.timer():
-            return
+        #if not timer.timer():
+        #    return
         self.crawl('http://www.fmprc.gov.cn/wjb/web_search.jsp?presearchword=&channelid=75003&siteid=5243&prepage=500&page=1&searchword=%E6%96%B0%E8%A5%BF%E5%85%B0+and+siteid%3D5243&sw=%E6%96%B0%E8%A5%BF%E5%85%B0&select=1', callback=self.index_page)
 
-    @config(age=12*10*60 * 60)
+    @config(age=24*60 * 60)
     def index_page(self, response):
         for each in response.doc('a[href^="http"]').items():
             detail_url=each.attr.href
@@ -47,10 +47,13 @@ class Handler(BaseHandler):
         soup2 = BeautifulSoup(content)
         imgs =soup2.select('img')
         images2=[]
+        content2 = str(soup2)
         for img,img2 in zip(imgs,images):
             new_image = update.load(img2.encode("utf8"), "fmprc")
             images2.append(new_image)
+            content2 = content2.replace(str(img),"(url,"+str(img2)+")")
             content=content.replace(img['src'],new_image)
+        text = ''.join(BeautifulSoup(content2).findAll(text=True))
         sql = ToMysql()
         format_content = FormatContent()
         data = {
@@ -61,11 +64,12 @@ class Handler(BaseHandler):
             "ImageNum": len(images2),
             "Language": 1,
             "NewsSource": "驻奥克兰总领馆",
-            "Link": response.url
+            "Link": response.url,
+            "PlainText":text,
         }
         #try:
-            #sql.into(**data)
+        #    sql.into(**data)
         #except:
-            #raise
+        #    raise
         return data
 

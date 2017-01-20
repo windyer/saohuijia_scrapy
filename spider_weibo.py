@@ -28,13 +28,13 @@ class Handler(BaseHandler):
 
     @every(minutes=60)
     def on_start(self):
-        if not timer.timer():
-            return
+        #if not timer.timer():
+        #    return
         for page in range(self.page_count):
             url = self.urls.format(str(page+1))
             self.crawl(url, callback=self.index_page, cookies=self.cookie)
 
-    @config(age=24*10*60 * 60)
+    @config(age=12*10*60 * 60)
     def index_page(self, response):
         content = response.content
         tree = etree.HTML(content)
@@ -64,6 +64,14 @@ class Handler(BaseHandler):
             text=soup.select('div[class="WB_editor_iframe"]')
             images2=[]
             content = str(text[0])
+            soup2 = BeautifulSoup(content)
+            s=[s.extract() for s in soup2('span')]
+            image_tap =soup2.select('img')
+            content2 = str(soup2)
+            for image,tap in zip(images,image_tap):
+                if image != '':
+                    content2 = content2.replace(str(tap),"(url,"+str(image)+")")
+            text = ''.join(BeautifulSoup(content2).findAll(text=True))
             sql = ToMysql()
             format_content = FormatContent()
             data = {
@@ -74,9 +82,10 @@ class Handler(BaseHandler):
                 "ImageNum":len(images),
                 "Language": 1,
                 "NewsSource": "微博",
-                "Link":response.url
+                "Link":response.url,
+                "PlainText":text,
             }
-            #sql.into(**data)
+            sql.into(**data)
             return data
 
 
